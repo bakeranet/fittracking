@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0D0D0F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FitTrack">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>FitTrack — Tu plan de transformación</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D0D0F;
+  --card: #16161A;
+  --border: #2A2A32;
+  --accent: #6EE7A8;
+  --accent-bg: rgba(110,231,168,0.08);
+  --accent-border: rgba(110,231,168,0.2);
+  --orange: #F4A261;
+  --blue: #7CB9E8;
+  --pink: #E88CB4;
+  --purple: #B4A0E8;
+  --red: #E85D5D;
+  --text: #EAEAEF;
+  --text-mid: #9999A8;
+  --text-dim: #5A5A6A;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; overflow:hidden; }
+body { font-family:'DM Sans',-apple-system,sans-serif; background:var(--bg); color:var(--text); overscroll-behavior:none; }
+.app { display:flex; flex-direction:column; height:100dvh; max-width:430px; margin:0 auto; }
+.header { padding:calc(var(--safe-top) + 12px) 20px 12px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+.header-title { font-size:19px; font-weight:700; letter-spacing:-0.5px; }
+.header-sub { font-size:11px; color:var(--text-dim); margin-top:2px; }
+.header-weight { text-align:right; }
+.header-weight .val { font-size:22px; font-weight:700; color:var(--accent); }
+.header-weight .label { font-size:10px; color:var(--text-dim); }
+.content { flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding:0 16px 100px; scroll-behavior:smooth; }
+.content::-webkit-scrollbar { display:none; }
+.nav { flex-shrink:0; display:flex; background:var(--card); border-top:1px solid var(--border); padding:6px 4px calc(var(--safe-bottom) + 6px); }
+.nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px; border:none; background:none; color:var(--text-dim); font-size:9px; font-family:inherit; cursor:pointer; border-radius:8px; transition:all 0.2s; }
+.nav-btn.active { color:var(--accent); }
+.nav-btn .icon { font-size:20px; line-height:1; }
+.card { background:var(--card); border-radius:14px; border:1px solid var(--border); padding:16px; margin-bottom:14px; }
+.card-title { font-size:11px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+.stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.stat { border-radius:12px; padding:14px; border:1px solid transparent; }
+.stat.green { background:rgba(110,231,168,0.06); border-color:rgba(110,231,168,0.12); }
+.stat.blue { background:rgba(124,185,232,0.06); border-color:rgba(124,185,232,0.12); }
+.stat.orange { background:rgba(244,162,97,0.06); border-color:rgba(244,162,97,0.12); }
+.stat.pink { background:rgba(232,140,180,0.06); border-color:rgba(232,140,180,0.12); }
+.stat-label { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.stat-val { font-size:24px; font-weight:700; letter-spacing:-0.5px; }
+.stat.green .stat-val { color:var(--accent); }
+.stat.blue .stat-val { color:var(--blue); }
+.stat.orange .stat-val { color:var(--orange); }
+.stat.pink .stat-val { color:var(--pink); }
+.progress-track { height:8px; background:var(--border); border-radius:4px; overflow:hidden; margin:8px 0; }
+.progress-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--accent),var(--blue)); transition:width 0.6s cubic-bezier(0.22,1,0.36,1); }
+.progress-labels { display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); }
+.progress-pct { color:var(--accent); font-weight:600; }
+.week-strip { display:flex; gap:6px; }
+.week-day { flex:1; text-align:center; padding:10px 2px; border-radius:10px; cursor:pointer; border:1px solid var(--border); background:var(--bg); transition:all 0.2s; }
+.week-day.done { border-color:var(--accent-border); background:var(--accent-bg); }
+.week-day .d-name { font-size:10px; color:var(--text-dim); margin-bottom:5px; }
+.week-day .d-icon { font-size:18px; margin-bottom:3px; }
+.week-day .d-status { font-size:9px; font-weight:600; color:var(--text-dim); }
+.week-day.done .d-status { color:var(--accent); }
+.input-row { display:flex; gap:10px; }
+.input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px 16px; color:var(--text); font-size:16px; font-family:inherit; outline:none; transition:border-color 0.2s; }
+.input:focus { border-color:var(--accent); }
+.input::placeholder { color:var(--text-dim); }
+textarea.input { min-height:110px; resize:none; line-height:1.6; font-size:14px; }
+.btn { background:var(--accent); color:var(--bg); border:none; border-radius:10px; padding:12px 22px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.btn:active { transform:scale(0.96); opacity:0.9; }
+.btn-danger { background:transparent; border:1px solid rgba(232,93,93,0.3); color:var(--red); border-radius:10px; padding:10px 20px; font-size:12px; font-family:inherit; cursor:pointer; }
+.meal-item { display:flex; align-items:center; gap:12px; padding:14px; border-radius:10px; margin-bottom:6px; cursor:pointer; background:var(--bg); border:1px solid var(--border); transition:all 0.15s; }
+.meal-item.done { background:var(--accent-bg); border-color:var(--accent-border); }
+.meal-check { width:24px; height:24px; border-radius:7px; border:2px solid var(--text-dim); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; flex-shrink:0; transition:all 0.15s; }
+.meal-item.done .meal-check { background:var(--accent); border-color:var(--accent); color:var(--bg); }
+.meal-name { font-size:14px; color:var(--text-mid); }
+.meal-item.done .meal-name { color:var(--text); font-weight:500; }
+.day-tabs { display:flex; gap:4px; margin-bottom:14px; overflow-x:auto; }
+.day-tabs::-webkit-scrollbar { display:none; }
+.day-tab { padding:7px 14px; border-radius:8px; border:none; font-size:13px; font-family:inherit; font-weight:500; cursor:pointer; background:transparent; color:var(--text-dim); white-space:nowrap; flex-shrink:0; transition:all 0.15s; }
+.day-tab.active { background:var(--accent-bg); color:var(--accent); }
+.compliance { display:flex; align-items:baseline; gap:8px; margin-bottom:8px; }
+.compliance-val { font-size:40px; font-weight:700; color:var(--accent); letter-spacing:-1px; }
+.compliance-label { font-size:13px; color:var(--text-dim); }
+.history-item { display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border); }
+.history-item:last-child { border-bottom:none; }
+.history-date { font-size:13px; color:var(--text-mid); }
+.history-val { font-size:15px; font-weight:600; }
+.note-entry { padding:14px 0; border-bottom:1px solid var(--border); }
+.note-entry:last-child { border-bottom:none; }
+.note-date { font-size:11px; color:var(--text-dim); margin-bottom:4px; }
+.note-text { font-size:13px; color:var(--text-mid); line-height:1.5; }
+.chart-container { position:relative; height:180px; margin-top:8px; }
+.chart-canvas { width:100%; height:100%; }
+.tip { font-size:11px; color:var(--text-dim); margin-top:8px; line-height:1.4; }
+.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:var(--bg); padding:10px 24px; border-radius:10px; font-size:14px; font-weight:600; opacity:0; pointer-events:none; transition:all 0.3s cubic-bezier(0.22,1,0.36,1); z-index:999; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.section { display:none; }
+.section.visible { display:block; }
+.weight-change { font-size:13px; margin-top:8px; font-weight:500; }
+.weight-change.loss { color:var(--accent); }
+.weight-change.gain { color:var(--red); }
+
+/* Workout / Menu plan styles */
+.plan-day { border:1px solid var(--border); border-radius:12px; margin-bottom:10px; overflow:hidden; }
+.plan-day-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; cursor:pointer; transition:background 0.15s; }
+.plan-day-header:active { background:var(--card); }
+.plan-day-left { display:flex; align-items:center; gap:10px; }
+.plan-badge { font-size:10px; font-weight:600; padding:3px 10px; border-radius:6px; text-transform:uppercase; letter-spacing:0.4px; }
+.plan-day-title { font-size:14px; font-weight:600; }
+.plan-day-meta { font-size:12px; color:var(--text-dim); display:flex; align-items:center; gap:4px; }
+.plan-day-body { display:none; padding:0 16px 16px; }
+.plan-day.open .plan-day-body { display:block; }
+.plan-day.open .chevron { transform:rotate(180deg); }
+.chevron { transition:transform 0.2s; font-size:14px; color:var(--text-dim); }
+
+.ex-table { width:100%; font-size:13px; border-collapse:collapse; }
+.ex-table th { text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-dim); padding:8px 4px; border-bottom:1px solid var(--border); font-weight:500; }
+.ex-table td { padding:10px 4px; border-bottom:1px solid var(--border); color:var(--text); vertical-align:top; }
+.ex-table tr:last-child td { border-bottom:none; }
+.ex-name { font-weight:600; font-size:13px; }
+.ex-note { font-size:11px; color:var(--text-dim); margin-top:2px; }
+.ex-group td { padding:8px 4px !important; font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.6px; font-weight:600; background:rgba(255,255,255,0.02); }
+
+.meal-plan-item { padding:12px 0; border-bottom:1px solid var(--border); }
+.meal-plan-item:last-child { border-bottom:none; }
+.meal-plan-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.meal-plan-label { font-size:13px; font-weight:600; color:var(--text); }
+.meal-plan-kcal { font-size:11px; color:var(--text-dim); background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:6px; }
+.meal-plan-desc { font-size:13px; color:var(--text-mid); line-height:1.55; }
+.meal-plan-macros { font-size:11px; color:var(--text-dim); margin-top:4px; display:flex; gap:10px; }
+.mp { color:var(--blue); }
+.mc { color:var(--accent); }
+.mg { color:var(--orange); }
+
+.kcal-summary { display:flex; align-items:center; gap:10px; padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:10px; margin-bottom:14px; }
+.kcal-summary-val { font-size:20px; font-weight:700; }
+.kcal-summary-macros { font-size:12px; color:var(--text-dim); }
+
+.run-info { font-size:13px; color:var(--text-mid); line-height:1.6; padding:8px 0; }
+.run-info strong { color:var(--text); font-weight:600; }
+
+@keyframes pop { 0%{transform:scale(0.95);opacity:0} 100%{transform:scale(1);opacity:1} }
+.card { animation:pop 0.25s cubic-bezier(0.22,1,0.36,1); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="header-title">FitTrack</div>
+      <div class="header-sub">82 kg → 75 kg · déficit ~500 kcal</div>
+    </div>
+    <div class="header-weight">
+      <div class="val" id="headerWeight">82.0</div>
+      <div class="label">kg actual</div>
+    </div>
+  </div>
+  <div class="content" id="content">
+    <div class="section visible" id="sec-dashboard"></div>
+    <div class="section" id="sec-weight"></div>
+    <div class="section" id="sec-meals"></div>
+    <div class="section" id="sec-gym"></div>
+    <div class="section" id="sec-menu"></div>
+    <div class="section" id="sec-notes"></div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')"><span class="icon">◉</span>Inicio</button>
+    <button class="nav-btn" data-tab="weight" onclick="switchTab('weight')"><span class="icon">⚖</span>Peso</button>
+    <button class="nav-btn" data-tab="meals" onclick="switchTab('meals')"><span class="icon">✓</span>Check</button>
+    <button class="nav-btn" data-tab="gym" onclick="switchTab('gym')"><span class="icon">🏋</span>Gym</button>
+    <button class="nav-btn" data-tab="menu" onclick="switchTab('menu')"><span class="icon">🍽</span>Menú</button>
+    <button class="nav-btn" data-tab="notes" onclick="switchTab('notes')"><span class="icon">📝</span>Notas</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE="fittrack-v1";
+const DAYS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+const FULL_DAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+const MEALS_CHECK=["Desayuno","Media mañana","Comida","Pre-entreno","Post-entreno","Cena"];
+const WORKOUTS=[
+  {type:"Tren superior",icon:"🏋️"},
+  {type:"Carrera + core",icon:"🏃"},
+  {type:"Tren inferior",icon:"🏋️"},
+  {type:"Push",icon:"🏋️"},
+  {type:"Carrera larga",icon:"🏃"},
+  {type:"Pull + pierna",icon:"🏋️"},
+  {type:"Descanso",icon:"🧘"}
+];
+
+// ── GYM PLAN DATA ──
+const GYM_PLAN = [
+  {
+    day:"Lunes", badge:"Tren superior", badgeColor:"var(--blue)", time:"~60 min",
+    exercises:[
+      {group:"Compuestos principales"},
+      {name:"Press banca",note:"Barra o mancuernas",sets:"4",reps:"6-8",rest:"2-3 min"},
+      {name:"Remo con barra",note:"Agarre prono, espalda neutra",sets:"4",reps:"6-8",rest:"2-3 min"},
+      {group:"Accesorios"},
+      {name:"Press militar mancuernas",note:"Sentado, control en la bajada",sets:"3",reps:"8-10",rest:"90 seg"},
+      {name:"Jalón al pecho",note:"Agarre medio",sets:"3",reps:"10-12",rest:"90 seg"},
+      {name:"Elevaciones laterales",note:"Mancuernas, sin balanceo",sets:"3",reps:"12-15",rest:"60 seg"},
+      {name:"Curl bíceps + press francés",note:"Superserie",sets:"3",reps:"10-12",rest:"60 seg"}
+    ]
+  },
+  {
+    day:"Martes", badge:"Carrera + core", badgeColor:"var(--pink)", time:"~45 min",
+    runInfo:"<strong>Carrera interválica (30 min):</strong> 5 min calentamiento trote suave, luego 8 intervalos de 1 min rápido + 1.5 min trote de recuperación. 5 min vuelta a la calma.",
+    exercises:[
+      {name:"Plancha frontal",sets:"3",reps:"45 seg",rest:"0"},
+      {name:"Russian twists",note:"Con disco o mancuerna",sets:"3",reps:"20 (total)",rest:"0"},
+      {name:"Elevación de piernas colgado",sets:"3",reps:"12-15",rest:"0"},
+      {name:"Dead bug",note:"Control anti-extensión lumbar",sets:"3",reps:"10/lado",rest:"60 seg"}
+    ]
+  },
+  {
+    day:"Miércoles", badge:"Tren inferior", badgeColor:"var(--accent)", time:"~60 min",
+    exercises:[
+      {group:"Compuestos principales"},
+      {name:"Sentadilla con barra",note:"Profundidad paralela o más",sets:"4",reps:"6-8",rest:"3 min"},
+      {name:"Peso muerto rumano",note:"Énfasis en isquiotibiales",sets:"4",reps:"8-10",rest:"2-3 min"},
+      {group:"Accesorios"},
+      {name:"Prensa de piernas",note:"Pies alto y ancho para glúteo",sets:"3",reps:"10-12",rest:"90 seg"},
+      {name:"Curl femoral tumbado",sets:"3",reps:"10-12",rest:"90 seg"},
+      {name:"Extensión de cuádriceps",sets:"3",reps:"12-15",rest:"60 seg"},
+      {name:"Elevación de gemelos",note:"De pie, pausa abajo 2 seg",sets:"4",reps:"12-15",rest:"60 seg"}
+    ]
+  },
+  {
+    day:"Jueves", badge:"Push", badgeColor:"var(--orange)", time:"~55 min",
+    exercises:[
+      {group:"Compuestos principales"},
+      {name:"Press banca inclinado",note:"Mancuernas, 30-45°",sets:"4",reps:"8-10",rest:"2 min"},
+      {name:"Press militar barra",note:"De pie, core activado",sets:"4",reps:"6-8",rest:"2-3 min"},
+      {group:"Accesorios"},
+      {name:"Aperturas con mancuernas",note:"Plano, estiramiento controlado",sets:"3",reps:"10-12",rest:"90 seg"},
+      {name:"Elevaciones laterales",note:"Drop set en última serie",sets:"3",reps:"12-15",rest:"60 seg"},
+      {name:"Fondos en paralelas",note:"Lastre si haces +12 fácil",sets:"3",reps:"8-12",rest:"90 seg"},
+      {name:"Extensión tríceps polea",note:"Cuerda, aprieta al final",sets:"3",reps:"12-15",rest:"60 seg"}
+    ]
+  },
+  {
+    day:"Viernes", badge:"Carrera larga", badgeColor:"var(--pink)", time:"~40-50 min",
+    runInfo:"<strong>Carrera continua zona 2 (35-45 min):</strong> Ritmo en el que puedas mantener una conversación. Entre 5:30 y 6:30 min/km. Es la sesión que más grasa quema proporcionalmente.<br><br><strong>Opcional:</strong> termina con 5 min de estiramientos dinámicos de cadera y gemelos.",
+    exercises:[]
+  },
+  {
+    day:"Sábado", badge:"Pull + pierna", badgeColor:"var(--purple)", time:"~65 min",
+    exercises:[
+      {group:"Pull"},
+      {name:"Dominadas",note:"Lastradas si haces +10",sets:"4",reps:"6-10",rest:"2-3 min"},
+      {name:"Remo mancuerna a 1 mano",note:"Apoyado en banco",sets:"3",reps:"8-10",rest:"90 seg"},
+      {name:"Face pulls",note:"Polea, rotación externa",sets:"3",reps:"15-20",rest:"60 seg"},
+      {name:"Curl martillo + curl barra",note:"Superserie",sets:"3",reps:"10-12",rest:"60 seg"},
+      {group:"Pierna (refuerzo)"},
+      {name:"Zancadas búlgaras",note:"Mancuernas, pie trasero elevado",sets:"3",reps:"10/pierna",rest:"90 seg"},
+      {name:"Hip thrust",note:"Barra, pausa arriba 2 seg",sets:"3",reps:"10-12",rest:"90 seg"},
+      {name:"Gemelos sentado",sets:"3",reps:"15-20",rest:"60 seg"}
+    ]
+  },
+  {
+    day:"Domingo", badge:"Descanso activo", badgeColor:"var(--text-dim)", time:"~30 min",
+    runInfo:"<strong>Paseo largo (30-45 min):</strong> Camina a buen ritmo. Desconecta de pantallas.<br><br><strong>Movilidad (15 min):</strong> Estiramientos de cadera (90/90, pigeon stretch), hombros (dislocaciones con banda), columna torácica (cat-cow, rotaciones).<br><br><strong>Foam roller:</strong> cuádriceps, isquiotibiales, dorsales y gemelos. 60 seg por grupo.",
+    exercises:[]
+  }
+];
+
+// ── MENU PLAN DATA (sin tomate, sin whey) ──
+const MENU_PLAN = [
+  {
+    day:"Lunes",sub:"Entreno",kcal:2410,p:212,c:242,g:68,
+    meals:[
+      {label:"Desayuno",kcal:530,desc:"Avena (60g) cocida con leche desnatada, mezclada con requesón (100g) y canela. Plátano en rodajas por encima.",p:38,c:62,g:10},
+      {label:"Media mañana",kcal:230,desc:"2 tortitas de arroz con 30g de crema de cacahuete y rodajas de manzana.",p:8,c:28,g:12},
+      {label:"Comida",kcal:680,desc:"Pechuga de pollo a la plancha (200g) con arroz basmati (80g en seco), ensalada de pepino, rúcula y zanahoria rallada con 1 cda de aceite de oliva.",p:55,c:72,g:16},
+      {label:"Pre-entreno",kcal:200,desc:"Tostada integral con pavo (60g) y un café solo.",p:18,c:22,g:4},
+      {label:"Post-entreno",kcal:390,desc:"Bowl: claras de huevo cocidas (4), avena (40g) cocida con leche desnatada, fresas troceadas y un toque de miel.",p:38,c:48,g:5},
+      {label:"Cena",kcal:380,desc:"Salmón al horno (150g) con brócoli y coliflor al vapor, 1 cda de aceite de oliva.",p:42,c:10,g:19}
+    ]
+  },
+  {
+    day:"Martes",sub:"Carrera",kcal:2380,p:210,c:238,g:66,
+    meals:[
+      {label:"Desayuno",kcal:490,desc:"Tortilla de 3 huevos + 1 clara con espinacas y champiñones. 1 tostada integral con pimiento asado en tiras.",p:35,c:28,g:24},
+      {label:"Media mañana",kcal:250,desc:"Yogur griego 0% (170g) con arándanos y 15g de almendras.",p:22,c:20,g:9},
+      {label:"Comida",kcal:700,desc:"Ternera magra salteada (180g) con pasta integral (80g en seco), champiñones, ajo y salsa de soja.",p:52,c:75,g:16},
+      {label:"Pre-carrera",kcal:180,desc:"Plátano con 1 cda de miel y un café.",p:2,c:42,g:1},
+      {label:"Post-carrera",kcal:370,desc:"Tostada integral grande con atún al natural (1 lata), aguacate machacado (40g) y pepino en rodajas.",p:35,c:35,g:12},
+      {label:"Cena",kcal:390,desc:"Lubina a la plancha (180g) con ensalada de rúcula, aguacate (50g), pepino y vinagreta de limón.",p:40,c:12,g:18}
+    ]
+  },
+  {
+    day:"Miércoles",sub:"Entreno",kcal:2420,p:214,c:245,g:67,
+    meals:[
+      {label:"Desayuno",kcal:510,desc:"Tostadas integrales (2) con aguacate machacado (60g), 2 huevos poché y escamas de chili.",p:28,c:38,g:24},
+      {label:"Media mañana",kcal:220,desc:"Requesón (150g) con nueces (15g) y un toque de miel.",p:22,c:16,g:9},
+      {label:"Comida",kcal:720,desc:"Muslos de pollo deshuesados al horno (200g) con boniato asado (180g) y judías verdes salteadas con ajo.",p:52,c:78,g:18},
+      {label:"Pre-entreno",kcal:190,desc:"Tortita de arroz con plátano y canela.",p:4,c:38,g:2},
+      {label:"Post-entreno",kcal:400,desc:"Yogur griego 0% (200g) con avena (40g), mantequilla de cacahuete (10g) y un plátano pequeño.",p:35,c:50,g:10},
+      {label:"Cena",kcal:380,desc:"Merluza en papillote con calabacín, pimiento rojo, cebolla y hierbas provenzales. 1 cda aceite de oliva.",p:38,c:15,g:12}
+    ]
+  },
+  {
+    day:"Jueves",sub:"Entreno",kcal:2400,p:211,c:240,g:69,
+    meals:[
+      {label:"Desayuno",kcal:510,desc:"Porridge de avena (60g) con queso fresco batido 0% (150g), fresas en rodajas y semillas de chía (10g).",p:36,c:55,g:12},
+      {label:"Media mañana",kcal:240,desc:"Yogur griego 0% (170g) con melocotón troceado y avena crujiente.",p:20,c:28,g:6},
+      {label:"Comida",kcal:690,desc:"Lomo de cerdo a la plancha (200g) con arroz integral (80g en seco), pimientos asados y ensalada de canónigos y pepino.",p:55,c:68,g:18},
+      {label:"Pre-entreno",kcal:200,desc:"Tostada integral con membrillo y pavo (40g).",p:14,c:28,g:4},
+      {label:"Post-entreno",kcal:380,desc:"Tortitas de claras: 5 claras, avena (40g), plátano machacado, canela. A la sartén antiadherente con miel.",p:35,c:48,g:4},
+      {label:"Cena",kcal:380,desc:"Revuelto de claras (4) y 1 huevo entero con gambas (100g), espárragos trigueros y ajo. Pan de centeno (1 rebanada).",p:42,c:18,g:14}
+    ]
+  },
+  {
+    day:"Viernes",sub:"Carrera",kcal:2390,p:208,c:248,g:64,
+    meals:[
+      {label:"Desayuno",kcal:500,desc:"Smoothie bowl: plátano congelado, espinacas, yogur griego 0% (150g), leche de avena. Topping: granola (20g), coco rallado.",p:28,c:58,g:12},
+      {label:"Media mañana",kcal:230,desc:"2 huevos duros con bastones de zanahoria y hummus (30g).",p:16,c:14,g:12},
+      {label:"Comida",kcal:710,desc:"Bowl de pavo picado (200g) con cuscús integral (80g en seco), garbanzos (50g cocidos), pepino y salsa de yogur.",p:58,c:76,g:14},
+      {label:"Pre-carrera",kcal:170,desc:"Dátiles (3) con un café solo.",p:2,c:40,g:0},
+      {label:"Post-carrera",kcal:360,desc:"Tostada integral con 2 huevos revueltos, aguacate (40g) y rúcula.",p:24,c:30,g:16},
+      {label:"Cena",kcal:420,desc:"Pollo al curry suave (180g) con leche de coco light, espinacas y arroz basmati (50g en seco).",p:42,c:35,g:14}
+    ]
+  },
+  {
+    day:"Sábado",sub:"Entreno",kcal:2430,p:216,c:244,g:70,
+    meals:[
+      {label:"Desayuno",kcal:550,desc:"Pancakes proteicos: avena (50g), requesón (100g), 1 huevo, 2 claras, canela. Con arándanos frescos y sirope sin azúcar.",p:42,c:52,g:14},
+      {label:"Media mañana",kcal:220,desc:"Yogur griego 0% (150g) con mix de frutos secos (20g).",p:18,c:14,g:10},
+      {label:"Comida",kcal:720,desc:"Contramuslo de pollo al horno (220g) con patata asada (200g), ensalada de canónigos con pepino, remolacha cocida y vinagreta.",p:55,c:72,g:20},
+      {label:"Pre-entreno",kcal:200,desc:"Pan de centeno con jamón serrano (40g) y pimiento asado.",p:16,c:24,g:5},
+      {label:"Post-entreno",kcal:380,desc:"Queso fresco batido 0% (250g) con avena (35g), plátano pequeño troceado y canela.",p:40,c:50,g:4},
+      {label:"Cena",kcal:360,desc:"Ensalada templada de garbanzos (100g cocidos), atún fresco a la plancha (120g), huevo duro, aceitunas (6) y vinagreta de limón.",p:40,c:28,g:14}
+    ]
+  },
+  {
+    day:"Domingo",sub:"Descanso",kcal:2100,p:196,c:182,g:68,
+    meals:[
+      {label:"Desayuno",kcal:480,desc:"Huevos revueltos (2 enteros + 2 claras) con champiñones y espinacas baby. 1 tostada integral con pimiento asado. Café con leche desnatada.",p:35,c:26,g:20},
+      {label:"Media mañana",kcal:200,desc:"Fruta de temporada con un puñado de almendras (20g).",p:6,c:22,g:12},
+      {label:"Comida libre",kcal:700,desc:"Tu comida libre semanal. Disfruta sin culpa pero con cabeza: elige lo que te apetezca, come hasta estar satisfecho (no reventado).",p:40,c:65,g:28},
+      {label:"Merienda",kcal:180,desc:"Requesón (120g) con canela y una pera en rodajas.",p:16,c:22,g:3},
+      {label:"Cena",kcal:420,desc:"Crema de verduras casera (calabacín, puerro, zanahoria) con pollo desmenuzado (150g) y un chorrito de aceite de oliva.",p:40,c:25,g:14},
+      {label:"Snack opcional",kcal:120,desc:"Onza de chocolate negro (>80%, 20g) con infusión.",p:2,c:8,g:8}
+    ]
+  }
+];
+
+let state = loadState();
+let currentTab = "dashboard";
+let selectedMealDay = todayDayIdx();
+let selectedMenuDay = 0;
+let selectedGymDay = 0;
+
+function defaultState(){return{weights:[],workouts:{},meals:{},notes:{},startWeight:82,goalWeight:75}}
+function loadState(){try{const r=localStorage.getItem(STORAGE);if(r)return JSON.parse(r)}catch{}return defaultState()}
+function saveState(){try{localStorage.setItem(STORAGE,JSON.stringify(state))}catch{}}
+function todayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function todayDayIdx(){const d=new Date().getDay();return d===0?6:d-1}
+function weekId(){const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()+4-day);const ys=new Date(d.getFullYear(),0,1);const wn=Math.ceil(((d-ys)/86400000+1)/7);return`${d.getFullYear()}-W${String(wn).padStart(2,"0")}`}
+function latestWeight(){if(!state.weights.length)return state.startWeight;const s=[...state.weights].sort((a,b)=>a.date.localeCompare(b.date));return s[s.length-1].value}
+function weightChange(){if(state.weights.length<2)return null;const s=[...state.weights].sort((a,b)=>a.date.localeCompare(b.date));return Math.round((s[s.length-1].value-s[0].value)*10)/10}
+function progressPct(){const lw=latestWeight();return Math.min(100,Math.max(0,Math.round(((state.startWeight-lw)/(state.startWeight-state.goalWeight))*100)))}
+function weekWorkouts(){const wk=weekId();return DAYS.map((_,i)=>!!state.workouts[`${wk}-${i}`])}
+function weekMeals(dayIdx){const wk=weekId();return MEALS_CHECK.map((_,mi)=>!!state.meals[`${wk}-${dayIdx}-${mi}`])}
+function mealCompliancePct(){const wk=weekId();let t=0,d=0;for(let i=0;i<7;i++)for(let m=0;m<MEALS_CHECK.length;m++){t++;if(state.meals[`${wk}-${i}-${m}`])d++}return t?Math.round((d/t)*100):0}
+function escapeHtml(t){const d=document.createElement("div");d.textContent=t;return d.innerHTML}
+
+let toastTimer;
+function showToast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2000)}
+
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("visible"));
+  document.getElementById(`sec-${tab}`).classList.add("visible");
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+  document.getElementById("content").scrollTop=0;
+  render();
+}
+
+function updateHeader(){document.getElementById("headerWeight").textContent=latestWeight().toFixed(1)}
+
+function render(){
+  updateHeader();
+  switch(currentTab){
+    case"dashboard":renderDashboard();break;
+    case"weight":renderWeight();break;
+    case"meals":renderMeals();break;
+    case"gym":renderGym();break;
+    case"menu":renderMenu();break;
+    case"notes":renderNotes();break;
+  }
+}
+
+function renderDashboard(){
+  const ww=weekWorkouts();const todayM=weekMeals(todayDayIdx());const pp=progressPct();const wc=weightChange();
+  let h=`
+    <div class="stats">
+      <div class="stat green"><div class="stat-label">Peso actual</div><div class="stat-val">${latestWeight().toFixed(1)} kg</div></div>
+      <div class="stat blue"><div class="stat-label">Objetivo</div><div class="stat-val">${state.goalWeight} kg</div></div>
+      <div class="stat orange"><div class="stat-label">Entrenos</div><div class="stat-val">${ww.filter(Boolean).length}/6</div></div>
+      <div class="stat pink"><div class="stat-label">Comidas hoy</div><div class="stat-val">${todayM.filter(Boolean).length}/${MEALS_CHECK.length}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Progreso</div>
+      <div class="progress-labels"><span>${state.startWeight} kg</span><span class="progress-pct">${pp}%</span><span>${state.goalWeight} kg</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pp}%"></div></div>
+      ${wc!==null?`<div class="weight-change ${wc<=0?'loss':'gain'}">${wc<=0?'↓':'↑'} ${Math.abs(wc)} kg desde el inicio</div>`:''}
+    </div>
+    <div class="card">
+      <div class="card-title">Semana actual</div>
+      <div class="week-strip">${DAYS.map((d,i)=>{const done=ww[i];const wo=WORKOUTS[i];return`<div class="week-day ${done?'done':''}" onclick="toggleWorkout(${i})"><div class="d-name">${d}</div><div class="d-icon">${wo.icon}</div><div class="d-status">${done?'✓':wo.type.split(' ')[0]}</div></div>`}).join('')}</div>
+    </div>`;
+  if(state.weights.length>1)h+=`<div class="card"><div class="card-title">Evolución</div><div class="chart-container"><canvas class="chart-canvas" id="weightChart"></canvas></div></div>`;
+  document.getElementById("sec-dashboard").innerHTML=h;
+  if(state.weights.length>1)drawChart();
+}
+
+function renderWeight(){
+  const sorted=[...state.weights].sort((a,b)=>b.date.localeCompare(a.date));
+  let h=`<div class="card"><div class="card-title">Registrar peso de hoy</div><div class="input-row"><input class="input" type="number" step="0.1" inputmode="decimal" placeholder="Ej: 81.5" id="weightInput"><button class="btn" onclick="addWeight()">Guardar</button></div><div class="tip">Pésate por la mañana, en ayunas, después del baño.</div></div>`;
+  if(sorted.length){h+=`<div class="card"><div class="card-title">Historial</div>`;sorted.forEach(w=>{h+=`<div class="history-item"><span class="history-date">${w.date}</span><span class="history-val">${w.value} kg</span></div>`});h+=`</div>`}
+  document.getElementById("sec-weight").innerHTML=h;
+  const input=document.getElementById("weightInput");if(input)input.addEventListener("keydown",e=>{if(e.key==="Enter")addWeight()});
+}
+
+function renderMeals(){
+  const dm=weekMeals(selectedMealDay);const cp=mealCompliancePct();
+  let h=`<div class="day-tabs">${DAYS.map((d,i)=>`<button class="day-tab ${selectedMealDay===i?'active':''}" onclick="selectMealDay(${i})">${d}</button>`).join('')}</div>
+    <div class="card"><div class="card-title" style="display:flex;justify-content:space-between"><span>${FULL_DAYS[selectedMealDay]}</span><span style="color:var(--accent)">${dm.filter(Boolean).length}/${MEALS_CHECK.length}</span></div>
+    ${MEALS_CHECK.map((m,mi)=>{const done=dm[mi];return`<div class="meal-item ${done?'done':''}" onclick="toggleMeal(${selectedMealDay},${mi})"><div class="meal-check">${done?'✓':''}</div><span class="meal-name">${m}</span></div>`}).join('')}</div>
+    <div class="card"><div class="card-title">Adherencia semanal</div><div class="compliance"><span class="compliance-val">${cp}%</span><span class="compliance-label">comidas completadas</span></div><div class="progress-track"><div class="progress-fill" style="width:${cp}%"></div></div></div>`;
+  document.getElementById("sec-meals").innerHTML=h;
+}
+
+function renderGym(){
+  let h=`<div class="day-tabs">${GYM_PLAN.map((d,i)=>`<button class="day-tab ${selectedGymDay===i?'active':''}" onclick="selectGymDay(${i})">${DAYS[i]}</button>`).join('')}</div>`;
+  const d=GYM_PLAN[selectedGymDay];
+  h+=`<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><span class="plan-badge" style="background:${d.badgeColor}22;color:${d.badgeColor}">${d.badge}</span><span style="font-size:15px;font-weight:600">${d.day}</span></div><span style="font-size:12px;color:var(--text-dim)">${d.time}</span></div>`;
+  if(d.runInfo)h+=`<div class="run-info">${d.runInfo}</div>`;
+  if(d.exercises.length){
+    h+=`<table class="ex-table"><thead><tr><th>Ejercicio</th><th>Series</th><th>Reps</th><th>Desc.</th></tr></thead><tbody>`;
+    d.exercises.forEach(ex=>{
+      if(ex.group){h+=`<tr class="ex-group"><td colspan="4">● ${ex.group}</td></tr>`}
+      else{h+=`<tr><td><div class="ex-name">${ex.name}</div>${ex.note?`<div class="ex-note">${ex.note}</div>`:''}</td><td>${ex.sets}</td><td>${ex.reps}</td><td>${ex.rest}</td></tr>`}
+    });
+    h+=`</tbody></table>`;
+  }
+  h+=`</div>`;
+  document.getElementById("sec-gym").innerHTML=h;
+}
+
+function renderMenu(){
+  let h=`<div class="day-tabs">${MENU_PLAN.map((d,i)=>`<button class="day-tab ${selectedMenuDay===i?'active':''}" onclick="selectMenuDay(${i})">${DAYS[i]}</button>`).join('')}</div>`;
+  const d=MENU_PLAN[selectedMenuDay];
+  h+=`<div class="kcal-summary"><div><div class="kcal-summary-val">${d.kcal.toLocaleString()} kcal</div><div class="kcal-summary-macros"><span class="mp">P: ${d.p}g</span> · <span class="mc">C: ${d.c}g</span> · <span class="mg">G: ${d.g}g</span></div></div></div>`;
+  h+=`<div class="card"><div class="card-title">${d.day} · ${d.sub}</div>`;
+  d.meals.forEach(m=>{
+    h+=`<div class="meal-plan-item"><div class="meal-plan-head"><span class="meal-plan-label">${m.label}</span><span class="meal-plan-kcal">${m.kcal} kcal</span></div><div class="meal-plan-desc">${m.desc}</div><div class="meal-plan-macros"><span class="mp">P: ${m.p}g</span><span class="mc">C: ${m.c}g</span><span class="mg">G: ${m.g}g</span></div></div>`;
+  });
+  h+=`</div>`;
+  document.getElementById("sec-menu").innerHTML=h;
+}
+
+function renderNotes(){
+  const todayNote=state.notes[todayStr()]||"";
+  const entries=Object.entries(state.notes).filter(([,v])=>v).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,15);
+  let h=`<div class="card"><div class="card-title">Nota del día · ${todayStr()}</div><textarea class="input" id="noteInput" placeholder="¿Cómo te has sentido? ¿Has dormido bien?">${todayNote}</textarea><div style="margin-top:12px"><button class="btn" onclick="saveNote()">Guardar nota</button></div></div>
+    <div class="card"><div class="card-title">Notas anteriores</div>${entries.length?entries.map(([d,n])=>`<div class="note-entry"><div class="note-date">${d}</div><div class="note-text">${escapeHtml(n)}</div></div>`).join(''):'<div style="text-align:center;padding:20px;font-size:13px;color:var(--text-dim)">Aún no tienes notas</div>'}</div>
+    <div style="text-align:center;margin-top:16px;padding-bottom:20px"><button class="btn-danger" onclick="resetData()">Reiniciar todos los datos</button></div>`;
+  document.getElementById("sec-notes").innerHTML=h;
+}
+
+// ── Actions ──
+function addWeight(){const input=document.getElementById("weightInput");const w=parseFloat(input.value);if(isNaN(w)||w<40||w>200){showToast("Introduce un peso válido");return}const today=todayStr();state.weights=[...state.weights.filter(e=>e.date!==today),{date:today,value:w}].sort((a,b)=>a.date.localeCompare(b.date));saveState();showToast("Peso registrado ✓");render()}
+function toggleWorkout(i){const key=`${weekId()}-${i}`;state.workouts[key]=!state.workouts[key];saveState();showToast(state.workouts[key]?"Entreno completado ✓":"Desmarcado");render()}
+function toggleMeal(dayIdx,mealIdx){const key=`${weekId()}-${dayIdx}-${mealIdx}`;state.meals[key]=!state.meals[key];saveState();render()}
+function selectMealDay(i){selectedMealDay=i;renderMeals()}
+function selectGymDay(i){selectedGymDay=i;renderGym()}
+function selectMenuDay(i){selectedMenuDay=i;renderMenu()}
+function saveNote(){const input=document.getElementById("noteInput");state.notes[todayStr()]=input.value;saveState();showToast("Nota guardada ✓")}
+function resetData(){if(confirm("¿Borrar todos los datos? No se puede deshacer.")){state=defaultState();localStorage.removeItem(STORAGE);showToast("Datos reiniciados");render()}}
+
+// ── Chart ──
+function drawChart(){
+  const canvas=document.getElementById("weightChart");if(!canvas)return;
+  const ctx=canvas.getContext("2d");const dpr=window.devicePixelRatio||1;
+  const rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
+  canvas.style.width=rect.width+"px";canvas.style.height=rect.height+"px";
+  ctx.scale(dpr,dpr);
+  const W=rect.width,H=rect.height;const pad={top:20,right:16,bottom:30,left:40};
+  const sorted=[...state.weights].sort((a,b)=>a.date.localeCompare(b.date));
+  const vals=sorted.map(w=>w.value);const minV=Math.floor(Math.min(...vals)-1);const maxV=Math.ceil(Math.max(...vals)+1);
+  const chartW=W-pad.left-pad.right;const chartH=H-pad.top-pad.bottom;
+  const x=i=>pad.left+(i/(sorted.length-1))*chartW;
+  const y=v=>pad.top+(1-(v-minV)/(maxV-minV))*chartH;
+  ctx.strokeStyle="#2A2A32";ctx.lineWidth=0.5;
+  for(let v=minV;v<=maxV;v++){const yy=y(v);ctx.beginPath();ctx.moveTo(pad.left,yy);ctx.lineTo(W-pad.right,yy);ctx.stroke();ctx.fillStyle="#5A5A6A";ctx.font="11px 'DM Sans'";ctx.textAlign="right";ctx.fillText(v+"",pad.left-8,yy+4)}
+  ctx.fillStyle="#5A5A6A";ctx.textAlign="center";ctx.font="10px 'DM Sans'";
+  const step=Math.max(1,Math.floor(sorted.length/6));
+  sorted.forEach((w,i)=>{if(i%step===0||i===sorted.length-1)ctx.fillText(w.date.slice(5),x(i),H-8)});
+  const grad=ctx.createLinearGradient(0,pad.top,0,H-pad.bottom);grad.addColorStop(0,"rgba(110,231,168,0.25)");grad.addColorStop(1,"rgba(110,231,168,0)");
+  ctx.beginPath();ctx.moveTo(x(0),H-pad.bottom);sorted.forEach((w,i)=>ctx.lineTo(x(i),y(w.value)));ctx.lineTo(x(sorted.length-1),H-pad.bottom);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();ctx.strokeStyle="#6EE7A8";ctx.lineWidth=2.5;ctx.lineJoin="round";sorted.forEach((w,i)=>{i===0?ctx.moveTo(x(i),y(w.value)):ctx.lineTo(x(i),y(w.value))});ctx.stroke();
+  sorted.forEach((w,i)=>{ctx.beginPath();ctx.arc(x(i),y(w.value),4,0,Math.PI*2);ctx.fillStyle="#6EE7A8";ctx.fill();ctx.strokeStyle="#0D0D0F";ctx.lineWidth=2;ctx.stroke()});
+}
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
+render();
+</script>
+</body>
+</html>
