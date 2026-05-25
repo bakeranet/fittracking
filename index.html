@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0D0D0F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FitTrack">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>FitTrack — Tu plan de transformación</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D0D0F;
+  --card: #16161A;
+  --card2: #1E1E24;
+  --border: #2A2A32;
+  --accent: #6EE7A8;
+  --accent-bg: rgba(110,231,168,0.08);
+  --accent-border: rgba(110,231,168,0.2);
+  --orange: #F4A261;
+  --blue: #7CB9E8;
+  --pink: #E88CB4;
+  --red: #E85D5D;
+  --text: #EAEAEF;
+  --text-mid: #9999A8;
+  --text-dim: #5A5A6A;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overscroll-behavior: none;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  padding: calc(var(--safe-top) + 12px) 20px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.header-title { font-size: 19px; font-weight: 700; letter-spacing: -0.5px; }
+.header-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.header-weight { text-align: right; }
+.header-weight .val { font-size: 22px; font-weight: 700; color: var(--accent); }
+.header-weight .label { font-size: 10px; color: var(--text-dim); }
+
+/* Scrollable content */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px 100px;
+  scroll-behavior: smooth;
+}
+.content::-webkit-scrollbar { display: none; }
+
+/* Bottom nav */
+.nav {
+  flex-shrink: 0;
+  display: flex;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 8px 8px calc(var(--safe-bottom) + 8px);
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  font-size: 10px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+.nav-btn.active { color: var(--accent); }
+.nav-btn .icon { font-size: 22px; line-height: 1; }
+.nav-btn.active .icon { transform: scale(1.1); }
+
+/* Cards */
+.card {
+  background: var(--card);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+/* Stats grid */
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stat {
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid transparent;
+}
+.stat.green { background: rgba(110,231,168,0.06); border-color: rgba(110,231,168,0.12); }
+.stat.blue { background: rgba(124,185,232,0.06); border-color: rgba(124,185,232,0.12); }
+.stat.orange { background: rgba(244,162,97,0.06); border-color: rgba(244,162,97,0.12); }
+.stat.pink { background: rgba(232,140,180,0.06); border-color: rgba(232,140,180,0.12); }
+.stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.stat-val { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+.stat.green .stat-val { color: var(--accent); }
+.stat.blue .stat-val { color: var(--blue); }
+.stat.orange .stat-val { color: var(--orange); }
+.stat.pink .stat-val { color: var(--pink); }
+
+/* Progress bar */
+.progress-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin: 8px 0; }
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--blue));
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.progress-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); }
+.progress-pct { color: var(--accent); font-weight: 600; }
+
+/* Week strip */
+.week-strip { display: flex; gap: 6px; }
+.week-day {
+  flex: 1;
+  text-align: center;
+  padding: 10px 2px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  transition: all 0.2s;
+}
+.week-day.done { border-color: var(--accent-border); background: var(--accent-bg); }
+.week-day .d-name { font-size: 10px; color: var(--text-dim); margin-bottom: 5px; }
+.week-day .d-icon { font-size: 18px; margin-bottom: 3px; }
+.week-day .d-status { font-size: 9px; font-weight: 600; color: var(--text-dim); }
+.week-day.done .d-status { color: var(--accent); }
+
+/* Input row */
+.input-row { display: flex; gap: 10px; }
+.input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input:focus { border-color: var(--accent); }
+.input::placeholder { color: var(--text-dim); }
+textarea.input { min-height: 110px; resize: none; line-height: 1.6; font-size: 14px; }
+
+.btn {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn:active { transform: scale(0.96); opacity: 0.9; }
+.btn-danger {
+  background: transparent;
+  border: 1px solid rgba(232,93,93,0.3);
+  color: var(--red);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Meal checklist */
+.meal-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  transition: all 0.15s;
+}
+.meal-item.done { background: var(--accent-bg); border-color: var(--accent-border); }
+.meal-check {
+  width: 24px; height: 24px;
+  border-radius: 7px;
+  border: 2px solid var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.meal-item.done .meal-check { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.meal-name { font-size: 14px; color: var(--text-mid); }
+.meal-item.done .meal-name { color: var(--text); font-weight: 500; }
+
+/* Day tabs */
+.day-tabs { display: flex; gap: 4px; margin-bottom: 14px; overflow-x: auto; }
+.day-tabs::-webkit-scrollbar { display: none; }
+.day-tab {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-dim);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.day-tab.active { background: var(--accent-bg); color: var(--accent); }
+
+/* Compliance */
+.compliance { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.compliance-val { font-size: 40px; font-weight: 700; color: var(--accent); letter-spacing: -1px; }
+.compliance-label { font-size: 13px; color: var(--text-dim); }
+
+/* History list */
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.history-item:last-child { border-bottom: none; }
+.history-date { font-size: 13px; color: var(--text-mid); }
+.history-val { font-size: 15px; font-weight: 600; }
+
+/* Note entry */
+.note-entry { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.note-entry:last-child { border-bottom: none; }
+.note-date { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+.note-text { font-size: 13px; color: var(--text-mid); line-height: 1.5; }
+
+/* Chart */
+.chart-container { position: relative; height: 180px; margin-top: 8px; }
+.chart-canvas { width: 100%; height: 100%; }
+
+/* Tip */
+.tip { font-size: 11px; color: var(--text-dim); margin-top: 8px; line-height: 1.4; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--accent);
+  color: var(--bg);
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Section hidden */
+.section { display: none; }
+.section.visible { display: block; }
+
+/* Weight change indicator */
+.weight-change { font-size: 13px; margin-top: 8px; font-weight: 500; }
+.weight-change.loss { color: var(--accent); }
+.weight-change.gain { color: var(--red); }
+
+/* Animations */
+@keyframes pop { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.card { animation: pop 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="header-title">FitTrack</div>
+      <div class="header-sub">82 kg → 75 kg · déficit ~500 kcal</div>
+    </div>
+    <div class="header-weight">
+      <div class="val" id="headerWeight">82.0</div>
+      <div class="label">kg actual</div>
+    </div>
+  </div>
+
+  <div class="content" id="content">
+    <!-- Dashboard -->
+    <div class="section visible" id="sec-dashboard"></div>
+    <!-- Peso -->
+    <div class="section" id="sec-weight"></div>
+    <!-- Comidas -->
+    <div class="section" id="sec-meals"></div>
+    <!-- Notas -->
+    <div class="section" id="sec-notes"></div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+      <span class="icon">◉</span>Inicio
+    </button>
+    <button class="nav-btn" data-tab="weight" onclick="switchTab('weight')">
+      <span class="icon">⚖</span>Peso
+    </button>
+    <button class="nav-btn" data-tab="meals" onclick="switchTab('meals')">
+      <span class="icon">🍽</span>Comidas
+    </button>
+    <button class="nav-btn" data-tab="notes" onclick="switchTab('notes')">
+      <span class="icon">📝</span>Notas
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+const STORAGE = "fittrack-v1";
+const DAYS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+const FULL_DAYS = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+const MEALS = ["Desayuno","Media mañana","Comida","Pre-entreno","Post-entreno","Cena"];
+const WORKOUTS = [
+  { type: "Tren superior", icon: "🏋️" },
+  { type: "Carrera + core", icon: "🏃" },
+  { type: "Tren inferior", icon: "🏋️" },
+  { type: "Push", icon: "🏋️" },
+  { type: "Carrera larga", icon: "🏃" },
+  { type: "Pull + pierna", icon: "🏋️" },
+  { type: "Descanso", icon: "🧘" },
+];
+
+let state = loadState();
+let currentTab = "dashboard";
+let selectedMealDay = todayDayIdx();
+
+function defaultState() {
+  return { weights: [], workouts: {}, meals: {}, notes: {}, startWeight: 82, goalWeight: 75 };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return defaultState();
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE, JSON.stringify(state)); } catch {}
+}
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function todayDayIdx() {
+  const d = new Date().getDay();
+  return d === 0 ? 6 : d - 1;
+}
+
+function weekId() {
+  const d = new Date();
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() + 4 - day);
+  const ys = new Date(d.getFullYear(), 0, 1);
+  const wn = Math.ceil(((d - ys) / 86400000 + 1) / 7);
+  return `${d.getFullYear()}-W${String(wn).padStart(2,"0")}`;
+}
+
+function latestWeight() {
+  if (!state.weights.length) return state.startWeight;
+  const s = [...state.weights].sort((a,b) => a.date.localeCompare(b.date));
+  return s[s.length - 1].value;
+}
+
+function weightChange() {
+  if (state.weights.length < 2) return null;
+  const s = [...state.weights].sort((a,b) => a.date.localeCompare(b.date));
+  return Math.round((s[s.length-1].value - s[0].value) * 10) / 10;
+}
+
+function progressPct() {
+  const lw = latestWeight();
+  return Math.min(100, Math.max(0, Math.round(((state.startWeight - lw) / (state.startWeight - state.goalWeight)) * 100)));
+}
+
+function weekWorkouts() {
+  const wk = weekId();
+  return DAYS.map((_, i) => !!state.workouts[`${wk}-${i}`]);
+}
+
+function weekMeals(dayIdx) {
+  const wk = weekId();
+  return MEALS.map((_, mi) => !!state.meals[`${wk}-${dayIdx}-${mi}`]);
+}
+
+function mealCompliancePct() {
+  const wk = weekId();
+  let t = 0, d = 0;
+  for (let i = 0; i < 7; i++) for (let m = 0; m < MEALS.length; m++) { t++; if (state.meals[`${wk}-${i}-${m}`]) d++; }
+  return t ? Math.round((d/t)*100) : 0;
+}
+
+function workoutCompliancePct() {
+  return Math.round((weekWorkouts().filter(Boolean).length / 6) * 100);
+}
+
+// ── Toast ──
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
+}
+
+// ── Navigation ──
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("visible"));
+  document.getElementById(`sec-${tab}`).classList.add("visible");
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.getElementById("content").scrollTop = 0;
+  render();
+}
+
+// ── Render ──
+function updateHeader() {
+  document.getElementById("headerWeight").textContent = latestWeight().toFixed(1);
+}
+
+function render() {
+  updateHeader();
+  switch (currentTab) {
+    case "dashboard": renderDashboard(); break;
+    case "weight": renderWeight(); break;
+    case "meals": renderMeals(); break;
+    case "notes": renderNotes(); break;
+  }
+}
+
+function renderDashboard() {
+  const ww = weekWorkouts();
+  const todayMeals = weekMeals(todayDayIdx());
+  const pp = progressPct();
+  const wc = weightChange();
+
+  let html = `
+    <div class="stats">
+      <div class="stat green"><div class="stat-label">Peso actual</div><div class="stat-val">${latestWeight().toFixed(1)} kg</div></div>
+      <div class="stat blue"><div class="stat-label">Objetivo</div><div class="stat-val">${state.goalWeight} kg</div></div>
+      <div class="stat orange"><div class="stat-label">Entrenos semana</div><div class="stat-val">${ww.filter(Boolean).length}/6</div></div>
+      <div class="stat pink"><div class="stat-label">Comidas hoy</div><div class="stat-val">${todayMeals.filter(Boolean).length}/${MEALS.length}</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Progreso</div>
+      <div class="progress-labels">
+        <span>${state.startWeight} kg</span>
+        <span class="progress-pct">${pp}%</span>
+        <span>${state.goalWeight} kg</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pp}%"></div></div>
+      ${wc !== null ? `<div class="weight-change ${wc <= 0 ? 'loss' : 'gain'}">${wc <= 0 ? '↓' : '↑'} ${Math.abs(wc)} kg desde el inicio</div>` : ''}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Semana actual</div>
+      <div class="week-strip">
+        ${DAYS.map((d, i) => {
+          const done = ww[i];
+          const wo = WORKOUTS[i];
+          return `<div class="week-day ${done ? 'done' : ''}" onclick="toggleWorkout(${i})">
+            <div class="d-name">${d}</div>
+            <div class="d-icon">${wo.icon}</div>
+            <div class="d-status">${done ? '✓' : wo.type.split(' ')[0]}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  if (state.weights.length > 1) {
+    html += `<div class="card"><div class="card-title">Evolución</div><div class="chart-container"><canvas class="chart-canvas" id="weightChart"></canvas></div></div>`;
+  }
+
+  document.getElementById("sec-dashboard").innerHTML = html;
+
+  if (state.weights.length > 1) drawChart();
+}
+
+function renderWeight() {
+  const sorted = [...state.weights].sort((a,b) => b.date.localeCompare(a.date));
+  let html = `
+    <div class="card">
+      <div class="card-title">Registrar peso de hoy</div>
+      <div class="input-row">
+        <input class="input" type="number" step="0.1" inputmode="decimal" placeholder="Ej: 81.5" id="weightInput">
+        <button class="btn" onclick="addWeight()">Guardar</button>
+      </div>
+      <div class="tip">Pésate por la mañana, en ayunas, después del baño. Siempre en las mismas condiciones.</div>
+    </div>
+  `;
+
+  if (sorted.length) {
+    html += `<div class="card"><div class="card-title">Historial</div>`;
+    sorted.forEach(w => {
+      html += `<div class="history-item"><span class="history-date">${w.date}</span><span class="history-val">${w.value} kg</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById("sec-weight").innerHTML = html;
+
+  const input = document.getElementById("weightInput");
+  if (input) input.addEventListener("keydown", e => { if (e.key === "Enter") addWeight(); });
+}
+
+function renderMeals() {
+  const dm = weekMeals(selectedMealDay);
+  const cp = mealCompliancePct();
+
+  let html = `
+    <div class="day-tabs">
+      ${DAYS.map((d, i) => `<button class="day-tab ${selectedMealDay === i ? 'active' : ''}" onclick="selectMealDay(${i})">${d}</button>`).join('')}
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between;">
+        <span>${FULL_DAYS[selectedMealDay]}</span>
+        <span style="color:var(--accent)">${dm.filter(Boolean).length}/${MEALS.length}</span>
+      </div>
+      ${MEALS.map((m, mi) => {
+        const done = dm[mi];
+        return `<div class="meal-item ${done ? 'done' : ''}" onclick="toggleMeal(${selectedMealDay},${mi})">
+          <div class="meal-check">${done ? '✓' : ''}</div>
+          <span class="meal-name">${m}</span>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Adherencia semanal</div>
+      <div class="compliance">
+        <span class="compliance-val">${cp}%</span>
+        <span class="compliance-label">de comidas completadas</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:${cp}%"></div></div>
+    </div>
+  `;
+
+  document.getElementById("sec-meals").innerHTML = html;
+}
+
+function renderNotes() {
+  const todayNote = state.notes[todayStr()] || "";
+  const entries = Object.entries(state.notes).filter(([,v]) => v).sort((a,b) => b[0].localeCompare(a[0])).slice(0, 15);
+
+  let html = `
+    <div class="card">
+      <div class="card-title">Nota del día · ${todayStr()}</div>
+      <textarea class="input" id="noteInput" placeholder="¿Cómo te has sentido? ¿Has dormido bien? ¿Algún capricho?">${todayNote}</textarea>
+      <div style="margin-top:12px"><button class="btn" onclick="saveNote()">Guardar nota</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Notas anteriores</div>
+      ${entries.length ? entries.map(([d, n]) => `<div class="note-entry"><div class="note-date">${d}</div><div class="note-text">${escapeHtml(n)}</div></div>`).join('') : '<div style="text-align:center;padding:20px;font-size:13px;color:var(--text-dim)">Aún no tienes notas</div>'}
+    </div>
+
+    <div style="text-align:center;margin-top:16px;padding-bottom:20px">
+      <button class="btn-danger" onclick="resetData()">Reiniciar todos los datos</button>
+    </div>
+  `;
+
+  document.getElementById("sec-notes").innerHTML = html;
+}
+
+function escapeHtml(t) {
+  const d = document.createElement("div");
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+// ── Actions ──
+function addWeight() {
+  const input = document.getElementById("weightInput");
+  const w = parseFloat(input.value);
+  if (isNaN(w) || w < 40 || w > 200) { showToast("Introduce un peso válido"); return; }
+  const today = todayStr();
+  state.weights = [...state.weights.filter(e => e.date !== today), { date: today, value: w }].sort((a,b) => a.date.localeCompare(b.date));
+  saveState();
+  showToast("Peso registrado ✓");
+  render();
+}
+
+function toggleWorkout(i) {
+  const key = `${weekId()}-${i}`;
+  state.workouts[key] = !state.workouts[key];
+  saveState();
+  showToast(state.workouts[key] ? "Entreno completado ✓" : "Desmarcado");
+  render();
+}
+
+function toggleMeal(dayIdx, mealIdx) {
+  const key = `${weekId()}-${dayIdx}-${mealIdx}`;
+  state.meals[key] = !state.meals[key];
+  saveState();
+  render();
+}
+
+function selectMealDay(i) {
+  selectedMealDay = i;
+  renderMeals();
+}
+
+function saveNote() {
+  const input = document.getElementById("noteInput");
+  state.notes[todayStr()] = input.value;
+  saveState();
+  showToast("Nota guardada ✓");
+}
+
+function resetData() {
+  if (confirm("¿Borrar todos los datos? No se puede deshacer.")) {
+    state = defaultState();
+    localStorage.removeItem(STORAGE);
+    showToast("Datos reiniciados");
+    render();
+  }
+}
+
+// ── Chart ──
+function drawChart() {
+  const canvas = document.getElementById("weightChart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  canvas.style.width = rect.width + "px";
+  canvas.style.height = rect.height + "px";
+  ctx.scale(dpr, dpr);
+
+  const W = rect.width, H = rect.height;
+  const pad = { top: 20, right: 16, bottom: 30, left: 40 };
+  const sorted = [...state.weights].sort((a,b) => a.date.localeCompare(b.date));
+  const vals = sorted.map(w => w.value);
+  const minV = Math.floor(Math.min(...vals) - 1);
+  const maxV = Math.ceil(Math.max(...vals) + 1);
+  const chartW = W - pad.left - pad.right;
+  const chartH = H - pad.top - pad.bottom;
+
+  const x = (i) => pad.left + (i / (sorted.length - 1)) * chartW;
+  const y = (v) => pad.top + (1 - (v - minV) / (maxV - minV)) * chartH;
+
+  // Grid
+  ctx.strokeStyle = "#2A2A32";
+  ctx.lineWidth = 0.5;
+  for (let v = minV; v <= maxV; v++) {
+    const yy = y(v);
+    ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(W - pad.right, yy); ctx.stroke();
+    ctx.fillStyle = "#5A5A6A";
+    ctx.font = "11px 'DM Sans'";
+    ctx.textAlign = "right";
+    ctx.fillText(v + "", pad.left - 8, yy + 4);
+  }
+
+  // X labels
+  ctx.fillStyle = "#5A5A6A";
+  ctx.textAlign = "center";
+  ctx.font = "10px 'DM Sans'";
+  const step = Math.max(1, Math.floor(sorted.length / 6));
+  sorted.forEach((w, i) => {
+    if (i % step === 0 || i === sorted.length - 1) {
+      ctx.fillText(w.date.slice(5), x(i), H - 8);
+    }
+  });
+
+  // Area fill
+  const grad = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
+  grad.addColorStop(0, "rgba(110,231,168,0.25)");
+  grad.addColorStop(1, "rgba(110,231,168,0)");
+  ctx.beginPath();
+  ctx.moveTo(x(0), H - pad.bottom);
+  sorted.forEach((w, i) => ctx.lineTo(x(i), y(w.value)));
+  ctx.lineTo(x(sorted.length - 1), H - pad.bottom);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = "#6EE7A8";
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = "round";
+  sorted.forEach((w, i) => { i === 0 ? ctx.moveTo(x(i), y(w.value)) : ctx.lineTo(x(i), y(w.value)); });
+  ctx.stroke();
+
+  // Dots
+  sorted.forEach((w, i) => {
+    ctx.beginPath();
+    ctx.arc(x(i), y(w.value), 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#6EE7A8";
+    ctx.fill();
+    ctx.strokeStyle = "#0D0D0F";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+}
+
+// ── Service Worker ──
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch(() => {});
+}
+
+// ── Init ──
+render();
+</script>
+
+</body>
+</html>
